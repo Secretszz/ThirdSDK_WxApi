@@ -1,0 +1,21 @@
+{
+  "name": "com.wxapi.bridge",
+  "displayName": "WeChat SDK",
+  "version": "1.0.0",
+  "description": "WeChat Open Platform Mobile Application SDK Adaptation Package.",
+  "unity": "2022.3",
+  "author": {
+    "name": "Bridge",
+    "url": "https://github.com/Secretszz"
+  },
+  "dependencies":{
+    "com.unity.nuget.newtonsoft-json": "3.2.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Secretszz/WXAPI.git"
+  },
+  "publishConfig": {
+    "registry": "https://package.openupm.com"
+  }
+}

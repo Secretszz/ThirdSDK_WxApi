@@ -1,0 +1,9 @@
+<dependencies>
+  <iosPods>
+    <iosPod name="WeChatOpenSDK-XCFramework">
+      <sources>
+        <source>https://github.com/CocoaPods/Specs</source>
+      </sources>
+    </iosPod>
+  </iosPods>
+</dependencies>
