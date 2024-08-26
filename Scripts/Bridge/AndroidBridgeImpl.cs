@@ -21,10 +21,10 @@ namespace WxApi
 	{
 		private const string UnityPlayerClassName = "com.unity3d.player.UnityPlayer";
 
-		private const string ManagerClassName = "com.wxapi.bridge.WXAPIManager";
-		private const string PayCallBackClassName = "com.wxapi.bridge.callback.PayCallBack";
-		private const string ShareCallBackClassName = "com.wxapi.bridge.callback.ShareCallBack";
-		private const string AuthCallBackClassName = "com.wxapi.bridge.callback.AuthCallback";
+		private const string ManagerClassName = "com.bridge.wxapi.WXAPIManager";
+		private const string PayCallBackClassName = "com.bridge.wxapi.callback.PayCallBack";
+		private const string ShareCallBackClassName = "com.bridge.wxapi.callback.ShareCallBack";
+		private const string AuthCallBackClassName = "com.bridge.wxapi.callback.AuthCallback";
 		private static AndroidJavaObject api;
 		private static AndroidJavaObject currentActivity;
 

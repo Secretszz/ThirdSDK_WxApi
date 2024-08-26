@@ -1,5 +1,5 @@
 {
-  "name": "com.wxapi.bridge",
+  "name": "com.bridge.wxapi",
   "displayName": "WeChat SDK",
   "version": "1.0.0",
   "description": "WeChat Open Platform Mobile Application SDK Adaptation Package.",
