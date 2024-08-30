@@ -42,12 +42,12 @@ namespace WxApi
 		/// <summary>
 		/// 应用ID
 		/// </summary>
-		public const string AppId = "wxb2285c9967573112";
+		public const string AppId = "";
 		
 		/// <summary>
 		/// 深度链接
 		/// </summary>
-		public const string UniversalLink = "https://sunnygame666.com/zhandoushaonv/";
+		public const string UniversalLink = "https://domain/project/";
 
 		/// <summary>
 		/// 初始化sdk

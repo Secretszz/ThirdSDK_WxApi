@@ -134,18 +134,42 @@ namespace WxApi
 			wx_Auth(state, OnFinishAuth);
 		}
 
+		/// <summary>
+		/// 支付回调监听
+		/// </summary>
 		private static IPayListener _payListener;
 		
+		/// <summary>
+		/// 分享回调监听
+		/// </summary>
 		private static IShareListener _shareListener;
 		
+		/// <summary>
+		/// 权限回调监听
+		/// </summary>
 		private static IAuthListener _authListener;
 
+		/// <summary>
+		/// 初始化
+		/// </summary>
+		/// <param name="appId"></param>
+		/// <param name="universalLink"></param>
 		[DllImport("__Internal")]
 		private static extern void wx_init(string appId, string universalLink);
 
+		/// <summary>
+		/// 打开客服界面
+		/// </summary>
+		/// <param name="groupId"></param>
+		/// <param name="kfid"></param>
+		/// <returns></returns>
 		[DllImport("__Internal")]
 		private static extern bool wx_openCustomerServiceChat(string groupId, string kfid);
 
+		/// <summary>
+		/// 是否下载了微信客户端
+		/// </summary>
+		/// <returns></returns>
 		[DllImport("__Internal")]
 		private static extern bool wx_isWXAppInstalled();
 
@@ -157,14 +181,32 @@ namespace WxApi
 		[DllImport("__Internal")]
 		private static extern void wx_Purchase(string orderInfo, WXAPIU3DBridgeCallback_onPayCallback onPayCallback);
 
+		/// <summary>
+		/// 分享图片
+		/// </summary>
+		/// <param name="path">图片本地路径</param>
+		/// <param name="scene">分享场景</param>
+		/// <param name="onShareCallback">分享回调</param>
 		[DllImport("__Internal")]
-		private static extern void wx_shareImage(string path, int scene, WXAPIU3DBridgeCallback_onShareCallback onFinishShare);
+		private static extern void wx_shareImage(string path, int scene, WXAPIU3DBridgeCallback_onShareCallback onShareCallback);
 
+		/// <summary>
+		/// 分享图片
+		/// </summary>
+		/// <param name="datas">图片数据字节流指针</param>
+		/// <param name="length">图片数据长度</param>
+		/// <param name="scene">分享场景</param>
+		/// <param name="onShareCallback">分享回调</param>
 		[DllImport("__Internal")]
-		private static extern void wx_shareImageWithDatas(IntPtr datas, int length, int scene, WXAPIU3DBridgeCallback_onShareCallback onFinishShare);
+		private static extern void wx_shareImageWithDatas(IntPtr datas, int length, int scene, WXAPIU3DBridgeCallback_onShareCallback onShareCallback);
 
+		/// <summary>
+		/// 请求权限
+		/// </summary>
+		/// <param name="state">权限类型</param>
+		/// <param name="onAuthCallback">完成请求回调</param>
 		[DllImport("__Internal")]
-		private static extern void wx_Auth(string state, WXAPIU3DBridgeCallback_onAuthCallback onFinishShare);
+		private static extern void wx_Auth(string state, WXAPIU3DBridgeCallback_onAuthCallback onAuthCallback);
 
 		/// <summary>
 		/// iOS桥接支付回调事件
