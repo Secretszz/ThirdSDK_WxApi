@@ -1,4 +1,4 @@
-package com.wxapi.bridge.util;
+package com.bridge.wxapi.util;
 
 import android.os.Bundle;
 import android.os.Handler;

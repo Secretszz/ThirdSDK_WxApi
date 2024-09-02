@@ -31,8 +31,8 @@
         return;
     }
     isInit = true;
-    NSString * appId = **APPID**;
-    NSString * universalLink = **UNILINK**;
+    NSString * appId = @"**APPID**";
+    NSString * universalLink = @"**UNILINK**";
     [WXApi startLogByLevel:WXLogLevelDetail logBlock:^(NSString * _Nonnull log) {
         NSLog(@"===WechatSDK:%@", log);
     }];

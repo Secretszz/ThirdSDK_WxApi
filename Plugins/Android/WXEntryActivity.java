@@ -1,4 +1,4 @@
-package com.zhandoushaonv.android.wxapi;
+**PACKAGE**
 
 import android.app.Activity;
 import android.content.Intent;

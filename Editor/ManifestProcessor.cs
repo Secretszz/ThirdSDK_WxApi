@@ -14,35 +14,38 @@ namespace Bridge.WxApi
     using System.Text;
     using System.IO;
     using System.Xml.Linq;
-    using UnityEditor.Build;
-#if UNITY_2018_1_OR_NEWER
-    using UnityEditor.Build.Reporting;
-#endif
     using UnityEngine;
+    using UnityEditor;
+    using UnityEditor.Callbacks;
+    using Editor;
 
-#if UNITY_2018_1_OR_NEWER
-    public class ManifestProcessor : IPreprocessBuildWithReport
-#else
-    public class ManifestProcessor : IPreprocessBuild
-#endif
+    public static class ManifestProcessor
     {
         private const string MANIFEST_RELATIVE_PATH = "Plugins/Android/LauncherManifest.xml";
 
-        private XNamespace ns = "http://schemas.android.com/apk/res/android";
+        private static XNamespace ns = "http://schemas.android.com/apk/res/android";
 
-        public int callbackOrder => 0;
-
-#if UNITY_2018_1_OR_NEWER
-        public void OnPreprocessBuild(BuildReport report)
-#else
-        public void OnPreprocessBuild(BuildTarget target, string path)
-#endif
+        [PostProcessBuild]
+        public static void OnPostprocessBuild(BuildTarget target, string projectPath)
         {
-            string packageName = UnityEditor.PlayerSettings.applicationIdentifier;
+            string packageName = PlayerSettings.applicationIdentifier;
 
-            RefreshActivityPackagePath(packageName);
+            RefreshLaunchManifest(projectPath, packageName);
+            ThirdSDKSettings settings = ThirdSDKSettings.LoadInstance();
+            // Objective-C 文件路径
+            var objectiveCFilePath = $"{projectPath}/unityLibrary/src/main/java/com/bridge/wxapi/WXAPIManager.java";
+            // 读取 Objective-C 文件内容
+            var objectiveCCode = new StringBuilder(File.ReadAllText(objectiveCFilePath));
+            objectiveCCode = objectiveCCode.Replace("**APPID**", settings.WxAppId);
+            // 将修改后的 Objective-C 代码写回文件中
+            File.WriteAllText(objectiveCFilePath, objectiveCCode.ToString());
+            RefreshActivityPackagePath(projectPath, packageName, "WXEntryActivity.java");
+            RefreshActivityPackagePath(projectPath, packageName, "WXPayEntryActivity.java");
+        }
 
-            string manifestPath = Path.Combine(Application.dataPath, MANIFEST_RELATIVE_PATH);
+        private static void RefreshLaunchManifest(string projectPath, string packageName)
+        {
+            string manifestPath = $"{projectPath}/launcher/src/main/AndroidManifest.xml";
 
             XDocument manifest = null;
             try
@@ -78,26 +81,31 @@ namespace Bridge.WxApi
             elemManifest.Save(manifestPath);
         }
 
-        private void RefreshActivityPackagePath(string packageName)
+        private static void RefreshActivityPackagePath(string projectPath, string packageName, string fileName)
         {
-            // Objective-C 文件路径
-            string objectiveCFilePath = Path.Combine(Application.dataPath, "WxApi/Plugins/Android/WXEntryActivity.java");
-            // 读取 Objective-C 文件内容
-            StringBuilder objectiveCCode = new StringBuilder(File.ReadAllText(objectiveCFilePath));
+            string objectiveCFilePath = Path.Combine(projectPath, "unityLibrary/src/main/java", fileName);
+            StringBuilder objectiveCCode;
+            if (File.Exists(objectiveCFilePath))
+            {
+                objectiveCCode = new StringBuilder(File.ReadAllText(objectiveCFilePath));
+                File.Delete(objectiveCFilePath);
+            }
+            else
+            {
+                objectiveCFilePath = Path.Combine(Application.dataPath, "ThirdSDK/WxApi/Plugins/Android", fileName);
+                objectiveCCode = new StringBuilder(File.ReadAllText(objectiveCFilePath));
+            }
             objectiveCCode = objectiveCCode.Replace("**PACKAGE**", $"package {packageName}.wxapi;");
-            // 将修改后的 Objective-C 代码写回文件中
-            File.WriteAllText(objectiveCFilePath, objectiveCCode.ToString());
-            
-            // Objective-C 文件路径
-            objectiveCFilePath = Path.Combine(Application.dataPath, "WxApi/Plugins/Android/WXPayEntryActivity.java");
-            // 读取 Objective-C 文件内容
-            objectiveCCode = new StringBuilder(File.ReadAllText(objectiveCFilePath));
-            objectiveCCode = objectiveCCode.Replace("**PACKAGE**", $"package {packageName}.wxapi;");
-            // 将修改后的 Objective-C 代码写回文件中
+            objectiveCFilePath = Path.Combine(projectPath, $"unityLibrary/src/main/java/{packageName.Replace(".", "/")}/wxapi");
+            if (!Directory.Exists(objectiveCFilePath))
+            {
+                Directory.CreateDirectory(objectiveCFilePath);
+            }
+            objectiveCFilePath = Path.Combine(objectiveCFilePath, fileName);
             File.WriteAllText(objectiveCFilePath, objectiveCCode.ToString());
         }
 
-        private XElement CreateActivityElement(string name, string theme, bool exported, string taskAffinity, string launchMode)
+        private static XElement CreateActivityElement(string name, string theme, bool exported, string taskAffinity, string launchMode)
         {
             return new XElement("activity",
                     new XAttribute(ns + "name", name),
@@ -108,7 +116,7 @@ namespace Bridge.WxApi
                     new XAttribute(ns + "launchMode", launchMode));
         }
 
-        private void LogBuildLaunchFailed()
+        private static void LogBuildLaunchFailed()
         {
             Debug.LogWarning(@"LauncherManifest.xml is not valid.
     <!-- 微信API回调Activity-->

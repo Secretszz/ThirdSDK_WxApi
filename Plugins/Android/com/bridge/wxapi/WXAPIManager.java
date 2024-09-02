@@ -1,4 +1,4 @@
-package com.wxapi.bridge;
+package com.bridge.wxapi;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -50,10 +50,10 @@ public class WXAPIManager {
     /**
      * 初始化微信API
      */
-    public void initWXAPIManager(Activity activity, String appId){
-        APP_ID = appId;
-        wxApi = WXAPIFactory.createWXAPI(activity, appId, true);
-        wxApi.registerApp(appId);
+    public void initWXAPIManager(Activity activity){
+        APP_ID = "**APPID**";
+        wxApi = WXAPIFactory.createWXAPI(activity, APP_ID, true);
+        wxApi.registerApp(APP_ID);
         activity.registerReceiver(new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
