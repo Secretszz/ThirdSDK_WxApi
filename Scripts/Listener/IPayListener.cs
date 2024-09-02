@@ -9,7 +9,7 @@
 // Create Time:		2023/12/04 17:31:07
 // *******************************************
 
-namespace WxApi
+namespace Bridge.WxApi
 {
 	/// <summary>
 	/// 

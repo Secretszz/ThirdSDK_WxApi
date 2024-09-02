@@ -1,4 +1,4 @@
-package com.wxapi.bridge.callback;
+package com.bridge.wxapi.callback;
 
 public interface AuthCallback {
 

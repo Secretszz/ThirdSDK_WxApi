@@ -9,7 +9,7 @@
 // *******************************************
 
 #if UNITY_IOS
-namespace WxApi
+namespace Bridge.WxApi
 {
 	using System;
 	using UnityEngine;
@@ -24,11 +24,9 @@ namespace WxApi
 		/// <summary>
 		/// 初始化sdk
 		/// </summary>
-		/// <param name="appId">应用id</param>
-		/// <param name="universalLink">深度链接</param>
-		void IBridge.InitBridge(string appId, string universalLink)
+		void IBridge.InitBridge()
 		{
-			wx_init(appId, universalLink);
+			wx_init();
 		}
 
 		/// <summary>
@@ -152,10 +150,8 @@ namespace WxApi
 		/// <summary>
 		/// 初始化
 		/// </summary>
-		/// <param name="appId"></param>
-		/// <param name="universalLink"></param>
 		[DllImport("__Internal")]
-		private static extern void wx_init(string appId, string universalLink);
+		private static extern void wx_init();
 
 		/// <summary>
 		/// 打开客服界面

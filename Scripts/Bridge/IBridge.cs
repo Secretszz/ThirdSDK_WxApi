@@ -9,7 +9,7 @@
 // Create Time:		2023/12/04 17:26:08
 // *******************************************
 
-namespace WxApi
+namespace Bridge.WxApi
 {
 	/// <summary>
 	/// 
@@ -19,9 +19,7 @@ namespace WxApi
 		/// <summary>
 		/// 初始化sdk
 		/// </summary>
-		/// <param name="appId">应用id</param>
-		/// <param name="universalLink">深度链接</param>
-		void InitBridge(string appId, string universalLink);
+		void InitBridge();
 
 		/// <summary>
 		/// 是否安装了微信客户端

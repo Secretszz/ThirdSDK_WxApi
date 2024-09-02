@@ -1,6 +1,6 @@
 {
   "name": "com.bridge.wxapi",
-  "displayName": "WeChat SDK",
+  "displayName": "ThirdSDK WxApi",
   "version": "1.0.0",
   "description": "WeChat Open Platform Mobile Application SDK Adaptation Package.",
   "unity": "2022.3",
@@ -9,6 +9,7 @@
     "url": "https://github.com/Secretszz"
   },
   "dependencies":{
-    "com.unity.nuget.newtonsoft-json": "3.2.1"
+    "com.unity.nuget.newtonsoft-json": "3.2.1",
+    "com.bridge.common": "1.0.0"
   }
 }

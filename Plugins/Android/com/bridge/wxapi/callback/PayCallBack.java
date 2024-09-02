@@ -1,4 +1,4 @@
-package com.wxapi.bridge.callback;
+package com.bridge.wxapi.callback;
 
 /**
  * 支付回调接口

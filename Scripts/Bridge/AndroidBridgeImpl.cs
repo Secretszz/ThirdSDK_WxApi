@@ -9,7 +9,7 @@
 // *******************************************
 
 #if UNITY_ANDROID
-namespace WxApi
+namespace Bridge.WxApi
 {
 	using Newtonsoft.Json;
 	using UnityEngine;
@@ -31,16 +31,14 @@ namespace WxApi
 		/// <summary>
 		/// 初始化sdk
 		/// </summary>
-		/// <param name="appId">应用id</param>
-		/// <param name="universalLink">深度链接</param>
-		void IBridge.InitBridge(string appId, string universalLink)
+		void IBridge.InitBridge()
 		{
 			AndroidJavaClass unityPlayer = new AndroidJavaClass(UnityPlayerClassName);
 			currentActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
 
 			AndroidJavaClass jc = new AndroidJavaClass(ManagerClassName);
 			api = jc.CallStatic<AndroidJavaObject>("getInstance");
-			api.Call("initWXAPIManager", currentActivity, appId);
+			api.Call("initWXAPIManager", currentActivity);
 		}
 
 		/// <summary>

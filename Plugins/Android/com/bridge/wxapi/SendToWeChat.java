@@ -1,4 +1,4 @@
-package com.wxapi.bridge;
+package com.bridge.wxapi;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
