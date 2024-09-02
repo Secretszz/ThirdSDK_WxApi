@@ -26,13 +26,13 @@
 #pragma mark - Delegate
 
 // 初始化
--(void) initWeChat:(NSString *) appId
-     universalLink:(NSString *) universalLink{
+-(void) initWeChat{
     if(isInit){
         return;
     }
     isInit = true;
-    
+    NSString * appId = **APPID**;
+    NSString * universalLink = **UNILINK**;
     [WXApi startLogByLevel:WXLogLevelDetail logBlock:^(NSString * _Nonnull log) {
         NSLog(@"===WechatSDK:%@", log);
     }];
@@ -211,13 +211,9 @@ extern "C" {
 #endif
     /**
      初始化微信SDK
-     @param appId 应用id
-     @param universalLink 深度链接
      */
-    void wx_init(const char * appId, const char * universalLink) {
-        NSString *strAppId = [NSString stringWithUTF8String:appId];
-        NSString *strUniversalLink = [NSString stringWithUTF8String:universalLink];
-		return [[WeChatSDKManager sharedManager] initWeChat:strAppId universalLink:strUniversalLink];
+    void wx_init() {
+		return [[WeChatSDKManager sharedManager] initWeChat];
     }
 
     /**

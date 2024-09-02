@@ -40,21 +40,11 @@ namespace Bridge.WxApi
 		}
 
 		/// <summary>
-		/// 应用ID
-		/// </summary>
-		public const string AppId = "";
-		
-		/// <summary>
-		/// 深度链接
-		/// </summary>
-		public const string UniversalLink = "https://domain/project/";
-
-		/// <summary>
 		/// 初始化sdk
 		/// </summary>
 		public static void InitWXAPI()
 		{
-			bridgeImpl.InitBridge(AppId, UniversalLink);
+			bridgeImpl.InitBridge();
 		}
 
 		/// <summary>

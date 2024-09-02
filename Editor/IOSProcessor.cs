@@ -11,23 +11,26 @@
 #if UNITY_IOS
 namespace Bridge.WxApi
 {
+	using System.Text;
 	using System.IO;
 	using UnityEditor;
 	using UnityEditor.Callbacks;
 	using UnityEditor.iOS.Xcode;
-	using System;
-	using System.Collections.Generic;
+	using Editor;
 
 	/// <summary>
 	/// 
 	/// </summary>
 	internal static class IOSProcessor
 	{
+		private const string ApiPath = "Libraries/ThirdSDK/WxApi/Plugins/iOS/WeChatSDKManager.mm";
+		
 		[PostProcessBuild(10002)]
 		public static void OnPostProcessBuild(BuildTarget target, string pathToBuildProject)
 		{
 			if (target == BuildTarget.iOS)
 			{
+				ThirdSDKSettings instance = ThirdSDKSettings.LoadInstance();
 				var projPath = pathToBuildProject + "/Unity-iPhone.xcodeproj/project.pbxproj";
 				var proj = new PBXProject();
 				proj.ReadFromFile(projPath);
@@ -56,47 +59,20 @@ namespace Bridge.WxApi
 						"weixinURLParamsAPI"
 				};
 			
-				PlistElementArray plistElementList = rootDic.GetElementArray("LSApplicationQueriesSchemes");
-				List<string> list = plistElementList.values.ToList(x => x.AsString());
-				foreach (var t in items)
-				{
-					if (!list.Contains(t))
-					{
-						plistElementList.AddString(t);
-					}
-				}
+				rootDic.AddApplicationQueriesSchemes(items);
 			
 				var array = rootDic.GetElementArray("CFBundleURLTypes");
-				PlistElementDict wxURLType = array.AddDict();
-				wxURLType.SetString("CFBundleTypeRole", "Editor");
-				wxURLType.SetString("CFBundleURLName", "weixin");
-				wxURLType.CreateArray("CFBundleURLSchemes").AddString(WXAPI.AppId);
+				array.AddCFBundleURLTypes("Editor", "weixin", new[] { instance.WxAppId });
 				plist.WriteToFile(plistPath);
-			}
-		}
 
-		private static void AddFrameworkToProjectEx(this PBXProject proj, string targetGuid, string framework, bool weak)
-		{
-			if (!proj.ContainsFramework(targetGuid, framework))
-			{
-				proj.AddFrameworkToProject(targetGuid, framework, weak);
+				var objectiveCFilePath = Path.Combine(pathToBuildProject, ApiPath);
+				StringBuilder objectiveCCode = new StringBuilder(File.ReadAllText(objectiveCFilePath));
+				objectiveCCode.Replace("**APPID**", instance.WxAppId);
+				objectiveCCode.Replace("**UNILINK**", instance.UniversalLink);
+				// 将修改后的 Objective-C 代码写回文件中
+				File.WriteAllText(objectiveCFilePath, objectiveCCode.ToString());
+				UnityEngine.Debug.Log("MooncakeConstant file modified at: " + objectiveCFilePath);
 			}
-		}
-
-		private static PlistElementArray GetElementArray(this PlistElementDict rootDict, string key)
-		{
-			return rootDict.values.TryGetValue(key, out var element) ? element.AsArray() : rootDict.CreateArray(key);
-		}
-		
-		private static List<T> ToList<TSource, T>(this IEnumerable<TSource> source, Func<TSource, T> predicate, Func<TSource, bool> selector = null)
-		{
-			List<T> result = new List<T>();
-			foreach (var item in source)
-			{
-				if (selector == null || selector(item))
-					result.Add(predicate(item));
-			}
-			return result;
 		}
 	}
 }

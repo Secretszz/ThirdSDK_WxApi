@@ -2,7 +2,8 @@
     "name": "Bridge.WxApi.Editor",
     "rootNamespace": "",
     "references": [
-        "GUID:81ac8e57573e2e5439a385461ca5445a"
+        "GUID:81ac8e57573e2e5439a385461ca5445a",
+        "GUID:92c3d3f22ede62643b00b5951466b066"
     ],
     "includePlatforms": [
         "Editor"

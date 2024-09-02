@@ -19,9 +19,7 @@ namespace Bridge.WxApi
 		/// <summary>
 		/// 初始化sdk
 		/// </summary>
-		/// <param name="appId">应用id</param>
-		/// <param name="universalLink">深度链接</param>
-		void IBridge.InitBridge(string appId, string universalLink)
+		void IBridge.InitBridge()
 		{
 		}
 
