@@ -9,7 +9,7 @@
 // *******************************************
 
 #if UNITY_ANDROID
-namespace WxApi
+namespace Bridge.WxApi
 {
 	using Newtonsoft.Json;
 	using UnityEngine;

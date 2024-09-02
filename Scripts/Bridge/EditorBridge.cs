@@ -9,7 +9,7 @@
 // *******************************************
 
 #if (UNITY_IOS || UNITY_ANDROID) && UNITY_EDITOR
-namespace WxApi
+namespace Bridge.WxApi
 {
 	/// <summary>
 	/// 

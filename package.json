@@ -9,6 +9,7 @@
     "url": "https://github.com/Secretszz"
   },
   "dependencies":{
-    "com.unity.nuget.newtonsoft-json": "3.2.1"
+    "com.unity.nuget.newtonsoft-json": "3.2.1",
+    "com.bridge.common": "1.0.0"
   }
 }

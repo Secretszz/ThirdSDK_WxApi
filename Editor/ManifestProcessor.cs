@@ -9,7 +9,7 @@
 // *******************************************
 
 #if UNITY_ANDROID
-namespace WxApi
+namespace Bridge.WxApi
 {
     using System.Text;
     using System.IO;

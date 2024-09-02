@@ -1,12 +1,8 @@
 {
-    "name": "WXAPI.Editor",
+    "name": "Bridge.WxApi.Runtime",
     "rootNamespace": "",
-    "references": [
-        "GUID:81ac8e57573e2e5439a385461ca5445a"
-    ],
-    "includePlatforms": [
-        "Editor"
-    ],
+    "references": [],
+    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,

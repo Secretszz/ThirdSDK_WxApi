@@ -9,7 +9,7 @@
 // *******************************************
 
 #if UNITY_IOS
-namespace WxApi
+namespace Bridge.WxApi
 {
 	using System.IO;
 	using UnityEditor;
