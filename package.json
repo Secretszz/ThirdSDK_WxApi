@@ -8,8 +8,15 @@
     "name": "Bridge",
     "url": "https://github.com/Secretszz"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Secretszz/ThirdSDK_WxApi.git"
+  },
   "dependencies":{
     "com.unity.nuget.newtonsoft-json": "3.2.1",
     "com.bridge.common": "1.0.0"
+  },
+  "publishConfig": {
+    "registry": "https://package.openupm.com"
   }
 }
