@@ -31,7 +31,7 @@ namespace Bridge.WxApi
             string packageName = PlayerSettings.applicationIdentifier;
 
             RefreshLaunchManifest(projectPath, packageName);
-            ThirdSDKSettings settings = ThirdSDKSettings.LoadInstance();
+            ThirdSDKSettings settings = ThirdSDKSettings.Instance;
             // Objective-C 文件路径
             var objectiveCFilePath = $"{projectPath}/unityLibrary/src/main/java/com/bridge/wxapi/WXAPIManager.java";
             // 读取 Objective-C 文件内容
