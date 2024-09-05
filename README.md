@@ -2,7 +2,7 @@
 微信开放平台移动端SDK适配器
 
 ## 其他包
-[微信](https://github.com/Secretszz/ThirdSDK_WxApi.git)
+[主包](https://github.com/Secretszz/ThirdSDK_Common.git)
 
 [小红书](https://github.com/Secretszz/ThirdSDK_XhsApi.git)
 
