@@ -20,9 +20,9 @@ import com.tencent.mm.opensdk.modelmsg.SendMessageToWX;
 import com.tencent.mm.opensdk.modelpay.PayReq;
 import com.tencent.mm.opensdk.openapi.IWXAPI;
 import com.tencent.mm.opensdk.openapi.WXAPIFactory;
-import com.wxapi.bridge.callback.AuthCallback;
-import com.wxapi.bridge.callback.PayCallBack;
-import com.wxapi.bridge.callback.ShareCallBack;
+import com.bridge.wxapi.callback.AuthCallback;
+import com.bridge.wxapi.callback.PayCallBack;
+import com.bridge.wxapi.callback.ShareCallBack;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -51,7 +51,7 @@ public class WXAPIManager {
      * 初始化微信API
      */
     public void initWXAPIManager(Activity activity){
-        APP_ID = "**APPID**";
+        APP_ID = "";
         wxApi = WXAPIFactory.createWXAPI(activity, APP_ID, true);
         wxApi.registerApp(APP_ID);
         activity.registerReceiver(new BroadcastReceiver() {

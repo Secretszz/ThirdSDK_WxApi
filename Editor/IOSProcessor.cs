@@ -24,13 +24,13 @@ namespace Bridge.WxApi
 	internal static class IOSProcessor
 	{
 		private const string ApiPath = "Libraries/ThirdSDK/WxApi/Plugins/iOS/WeChatSDKManager.mm";
-		
+
 		[PostProcessBuild(10002)]
 		public static void OnPostProcessBuild(BuildTarget target, string pathToBuildProject)
 		{
 			if (target == BuildTarget.iOS)
 			{
-				ThirdSDKSettings instance = ThirdSDKSettings.LoadInstance();
+				ThirdSDKSettings instance = ThirdSDKSettings.Instance;
 				var projPath = pathToBuildProject + "/Unity-iPhone.xcodeproj/project.pbxproj";
 				var proj = new PBXProject();
 				proj.ReadFromFile(projPath);
@@ -40,27 +40,27 @@ namespace Bridge.WxApi
 				var targetGUID = proj.TargetGuidByName("Unity-iPhone");
 #endif
 				proj.AddBuildProperty(targetGUID, "OTHER_LDFLAGS", "-ObjC -all_load");
-				
+
 				proj.AddFrameworkToProjectEx(targetGUID, "Security.framework", false);
 				proj.AddFrameworkToProjectEx(targetGUID, "CoreGraphics.framework", false);
 				proj.AddFrameworkToProjectEx(targetGUID, "WebKit.framework", false);
 
 				proj.WriteToFile(projPath);
-				
+
 				var plistPath = Path.Combine(pathToBuildProject, "Info.plist");
 				var plist = new PlistDocument();
 				plist.ReadFromFile(plistPath);
 				var rootDic = plist.root;
-			
+
 				var items = new[]
 				{
 						"weixin",
 						"weixinULAPI",
 						"weixinURLParamsAPI"
 				};
-			
+
 				rootDic.AddApplicationQueriesSchemes(items);
-			
+
 				var array = rootDic.GetElementArray("CFBundleURLTypes");
 				array.AddCFBundleURLTypes("Editor", "weixin", new[] { instance.WxAppId });
 				plist.WriteToFile(plistPath);
@@ -71,7 +71,6 @@ namespace Bridge.WxApi
 				objectiveCCode.Replace("**UNILINK**", instance.UniversalLink);
 				// 将修改后的 Objective-C 代码写回文件中
 				File.WriteAllText(objectiveCFilePath, objectiveCCode.ToString());
-				UnityEngine.Debug.Log("MooncakeConstant file modified at: " + objectiveCFilePath);
 			}
 		}
 	}
