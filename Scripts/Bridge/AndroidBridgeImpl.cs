@@ -11,6 +11,7 @@
 #if UNITY_ANDROID
 namespace Bridge.WxApi
 {
+	using Common;
 	using Newtonsoft.Json;
 	using UnityEngine;
 
@@ -103,7 +104,7 @@ namespace Bridge.WxApi
 		/// <param name="listener">拉起分享窗口事件</param>
 		void IBridge.ShareLink(string linkUrl, int scene, IShareListener listener)
 		{
-			listener?.OnFinishShare(false, "not support");
+			listener?.OnError(-1, "not support");
 		}
 
 		/// <summary>
@@ -114,20 +115,16 @@ namespace Bridge.WxApi
 		/// <param name="listener">拉起分享窗口事件</param>
 		void IBridge.ShareVideo(string videoUrl, int scene, IShareListener listener)
 		{
-			listener?.OnFinishShare(false, "not support");
+			listener?.OnError(-1, "not support");
 		}
 
 		/// <summary>
 		/// 登录
 		/// </summary>
-		/// <param name="state">用于保持请求和回调的状态，授权请求后原样带回给第三方。
-		/// 该参数可用于防止 csrf 攻击（跨站请求伪造攻击），建议第三方带上该参数，可设置为简单的随机数加 session 进行校验。
-		/// 在state传递的过程中会将该参数作为url的一部分进行处理，因此建议对该参数进行url encode操作，防止其中含有影响url解析的特殊字符（如'#'、'&'等）导致该参数无法正确回传。
-		/// </param>
 		/// <param name="listener">验证回调</param>
-		void IBridge.WeChatAuth(string state, IAuthListener listener)
+		void IBridge.WeChatAuth(ILoginListener listener)
 		{
-			api?.Call("sendWeChatAuth", new[] { "snsapi_userinfo" }, state, new AuthCallback(listener));
+			api?.Call("sendWeChatAuth", new AuthCallback(listener));
 		}
 
 		private static AndroidJavaObject GetBitmap(string imagePath)
@@ -205,9 +202,19 @@ namespace Bridge.WxApi
 
 			private IShareListener listener;
 
-			public void onFinishShare(bool success, string err_msg)
+			public void onSuccess()
 			{
-				listener?.OnFinishShare(success, err_msg);
+				listener?.OnSuccess();
+			}
+
+			public void onCancel()
+			{
+				listener?.OnCancel();
+			}
+
+			public void onError(int errCode, string errMsg)
+			{
+				listener?.OnError(errCode, errMsg);
 			}
 		}
 
@@ -216,50 +223,38 @@ namespace Bridge.WxApi
 		/// </summary>
 		private class AuthCallback : AndroidJavaProxy
 		{
-			public AuthCallback(IAuthListener listener) : base(AuthCallBackClassName)
+			public AuthCallback(ILoginListener listener) : base(AuthCallBackClassName)
 			{
 				this.listener = listener;
 			}
 
-			private IAuthListener listener;
+			private ILoginListener listener;
 
 			/// <summary>
-			/// 用户同意
+			/// 登录成功
 			/// </summary>
-			/// <param name="code"></param>
-			/// <param name="state"></param>
-			public void onUserAuth(string code, string state)
+			/// <param name="accessToken"></param>
+			public void onSuccess(string accessToken)
 			{
-				listener?.OnUserAuth(code, state);
+				listener?.OnSuccess(accessToken);
 			}
 
 			/// <summary>
 			/// 用户取消
 			/// </summary>
-			/// <param name="state"></param>
-			public void onUserCancel(string state)
+			public void onCancel()
 			{
-				listener.OnUserCancel(state);
+				listener.OnCancel();
 			}
 
 			/// <summary>
-			/// 用户拒绝
-			/// </summary>
-			/// <param name="state"></param>
-			public void onUserDenied(string state)
-			{
-				listener.OnUserDenied(state);
-			}
-
-			/// <summary>
-			/// 用户错误
+			/// 错误
 			/// </summary>
 			/// <param name="errCode"></param>
 			/// <param name="errStr"></param>
-			/// <param name="state"></param>
-			public void onError(int errCode, string errStr, string state)
+			public void onError(int errCode, string errStr)
 			{
-				listener.OnError(errCode, errStr, state);
+				listener.OnError(errCode, errStr);
 			}
 		}
 	}

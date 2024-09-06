@@ -10,6 +10,8 @@
 
 namespace Bridge.WxApi
 {
+	using Common;
+	
 	/// <summary>
 	/// 
 	/// </summary>
