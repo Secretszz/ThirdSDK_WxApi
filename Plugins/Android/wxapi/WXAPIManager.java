@@ -10,6 +10,9 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.bridge.common.listener.ILoginListener;
+import com.bridge.common.listener.IPayListener;
+import com.bridge.common.listener.IShareListener;
 import com.tencent.mm.opensdk.constants.Build;
 import com.tencent.mm.opensdk.constants.ConstantsAPI;
 import com.tencent.mm.opensdk.modelbase.BaseReq;
@@ -20,12 +23,11 @@ import com.tencent.mm.opensdk.modelmsg.SendMessageToWX;
 import com.tencent.mm.opensdk.modelpay.PayReq;
 import com.tencent.mm.opensdk.openapi.IWXAPI;
 import com.tencent.mm.opensdk.openapi.WXAPIFactory;
-import com.bridge.wxapi.callback.AuthCallback;
-import com.bridge.wxapi.callback.PayCallBack;
-import com.bridge.wxapi.callback.ShareCallBack;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.Random;
 
 public class WXAPIManager {
     private static final String TAG = WXAPIManager.class.getName();
@@ -35,9 +37,9 @@ public class WXAPIManager {
     private static WXAPIManager instance;
 
     private IWXAPI wxApi;
-    private ShareCallBack shareCallBack;
-    private AuthCallback authCallback;
-    private PayCallBack payCallBack;
+    private IShareListener shareListener;
+    private ILoginListener loginListener;
+    private IPayListener payListener;
     private SendToWeChat sender;
 
     public static WXAPIManager getInstance(){
@@ -101,15 +103,15 @@ public class WXAPIManager {
     /**
      * 开始调用微信支付API
      * @param orderInfo 订单信息
-     * @param payCallBack 支付回调
+     * @param payListener 支付回调
      */
-    public void openWechatPay(String orderInfo, PayCallBack payCallBack){
+    public void openWechatPay(String orderInfo, IPayListener payListener){
         if (checkWXApi()){
-            payCallBack.onPayResult(-1, "wxApi error");
+            payListener.onError(-1, "wxApi error");
             return;
         }
         try {
-            this.payCallBack = payCallBack;
+            this.payListener = payListener;
             JSONObject obj = new JSONObject(orderInfo);
             final PayReq payReq = new PayReq();
             payReq.appId = obj.getString("appid");
@@ -122,7 +124,7 @@ public class WXAPIManager {
             wxApi.sendReq(payReq);
         }catch (JSONException ex){
             Log.e(TAG, ex.getMessage(), ex);
-            payCallBack.onPayResult(-1, ex.getMessage());
+            payListener.onError(-1, ex.getMessage());
         }
     }
 
@@ -130,44 +132,39 @@ public class WXAPIManager {
      * 分享图片到微信
      * @param bmp 图片
      * @param targetScene 目标场景
-     * @param callback 完成分享事件
+     * @param shareListener 完成分享事件
      */
-    public void shareImage(Bitmap bmp, int targetScene, ShareCallBack callback){
+    public void shareImage(Bitmap bmp, int targetScene, IShareListener shareListener){
         if (checkWXApi()){
-            callback.onFinishShare(false, "wxApi error");
+            shareListener.onError(-1, "wxApi error");
             return;
         }
 
         if (bmp == null){
             Log.d(TAG, "ShareImage: Bitmap === load image failed");
-            if (callback != null){
-                callback.onFinishShare(false, "ShareImage: Bitmap === load image failed");
+            if (shareListener != null){
+                shareListener.onError(-1, "ShareImage: Bitmap === load image failed");
             }
             return;
         }
-        shareCallBack = callback;
+        this.shareListener = shareListener;
         sender.SendImageToWeChat(bmp, THUMB_SIZE, targetScene);
     }
 
     /**
      * 发送微信授权
-     * @param scopeArray 授权类型数组
-     * @param state 用于保持请求和回调的状态，授权请求后原样带回给第三方。
-     *              该参数可用于防止 csrf 攻击（跨站请求伪造攻击），
-     *              建议第三方带上该参数，可设置为简单的随机数加 session 进行校验。
-     *              在state传递的过程中会将该参数作为url的一部分进行处理，
-     *              因此建议对该参数进行url encode操作，
-     *              防止其中含有影响url解析的特殊字符（如'#'、'&'等）导致该参数无法正确回传。
-     * @param callback 授权完成回调事件
+     * @param loginListener 授权完成回调事件
      */
-    public void sendWeChatAuth(String[] scopeArray, String state, AuthCallback callback){
+    public void login(ILoginListener loginListener){
         if (checkWXApi()){
-            callback.onError(-1, "wxApi error", state);
+            loginListener.onError(-1, "wxApi error");
             return;
         }
 
-        this.authCallback = callback;
-        sender.SendAuthToWeChat(scopeArray, state);
+        this.loginListener = loginListener;
+        String[] scopeArray = new String[]{"snsapi_userinfo"};
+        Random random = new Random();
+        sender.SendAuthToWeChat(scopeArray, String.valueOf(random.nextInt(1000)));
     }
 
     /**
@@ -175,18 +172,19 @@ public class WXAPIManager {
      * @param authResp 授权回调
      */
     public void onAuthResp(@NonNull SendAuth.Resp authResp){
-        if (authResp.errCode == 0){
-            // 用户同意
-            this.authCallback.onUserAuth(authResp.code, authResp.state);
-        } else if (authResp.errCode == -4){
+        if (authResp.errCode == BaseResp.ErrCode.ERR_OK){
+            // 用户同意，获取AccessToken
+            String AccessToken = "";
+            this.loginListener.onSuccess(AccessToken);
+        } else if (authResp.errCode == BaseResp.ErrCode.ERR_AUTH_DENIED){
             // 用户拒绝
-            this.authCallback.onUserDenied(authResp.state);
-        } else if (authResp.errCode == -2){
+            this.loginListener.onError(-1, "user denied");
+        } else if (authResp.errCode == BaseResp.ErrCode.ERR_USER_CANCEL){
             // 用户取消
-            this.authCallback.onUserCancel(authResp.state);
+            this.loginListener.onCancel();
         } else {
             // 发生错误
-            this.authCallback.onError(authResp.errCode, authResp.errStr, authResp.state);
+            this.loginListener.onError(authResp.errCode, authResp.errStr);
         }
     }
 
@@ -222,8 +220,17 @@ public class WXAPIManager {
             Log.d(TAG, "onResp: COMMAND_SENDMESSAGE_TO_WX");
             SendMessageToWX.Resp sendResp = (SendMessageToWX.Resp)resp;
             Log.d(TAG, "sendResp===: " + sendResp.errStr);
-            if (shareCallBack != null){
-                shareCallBack.onFinishShare(sendResp.errCode == BaseResp.ErrCode.ERR_OK, "");
+            if (shareListener != null){
+                if (sendResp.errCode == BaseResp.ErrCode.ERR_OK){
+                    // 分享成功
+                    this.shareListener.onSuccess();
+                } else if (sendResp.errCode == BaseResp.ErrCode.ERR_USER_CANCEL){
+                    // 用户取消
+                    this.shareListener.onCancel();
+                } else {
+                    // 发生错误
+                    this.loginListener.onError(sendResp.errCode, sendResp.errStr);
+                }
             }
         }
 
@@ -234,8 +241,17 @@ public class WXAPIManager {
 
         if (resp.getType() == ConstantsAPI.COMMAND_PAY_BY_WX) {
             Log.e(TAG, "COMMAND_PAY_BY_WX");
-            if (payCallBack != null){
-                payCallBack.onPayResult(resp.errCode, resp.errStr);
+            if (payListener != null){
+                if (resp.errCode == BaseResp.ErrCode.ERR_OK){
+                    // 分享成功
+                    this.payListener.onSuccess();
+                } else if (resp.errCode == BaseResp.ErrCode.ERR_USER_CANCEL){
+                    // 用户取消
+                    this.payListener.onCancel();
+                } else {
+                    // 发生错误
+                    this.payListener.onError(resp.errCode, resp.errStr);
+                }
             }
         }
 

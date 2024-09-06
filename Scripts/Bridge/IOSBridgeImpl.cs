@@ -11,6 +11,7 @@
 #if UNITY_IOS
 namespace Bridge.WxApi
 {
+	using Common;
 	using System;
 	using UnityEngine;
 	using System.Runtime.InteropServices;

@@ -11,6 +11,8 @@
 #if (UNITY_IOS || UNITY_ANDROID) && UNITY_EDITOR
 namespace Bridge.WxApi
 {
+	using Common;
+	
 	/// <summary>
 	/// 
 	/// </summary>
@@ -40,27 +42,27 @@ namespace Bridge.WxApi
 
 		void IBridge.ShareImage(string imagePath, int scene, IShareListener listener)
 		{
-			listener?.OnFinishShare(true, "");
+			listener?.OnSuccess();
 		}
 
 		void IBridge.ShareImage(byte[] imageData, int scene, IShareListener listener)
 		{
-			listener?.OnFinishShare(true, "");
+			listener?.OnSuccess();
 		}
 
 		public void ShareLink(string linkUrl, int scene, IShareListener listener)
 		{
-			listener?.OnFinishShare(false, "not support");
+			listener?.OnSuccess();
 		}
 
 		public void ShareVideo(string videoUrl, int scene, IShareListener listener)
 		{
-			listener?.OnFinishShare(false, "not support");
+			listener?.OnSuccess();
 		}
 
-		public void WeChatAuth(string state, IAuthListener listener)
+		public void WeChatAuth(ILoginListener listener)
 		{
-			listener?.OnUserCancel(state);
+			listener?.OnCancel();
 		}
 	}
 }

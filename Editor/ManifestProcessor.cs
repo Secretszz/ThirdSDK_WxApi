@@ -25,15 +25,16 @@ namespace Bridge.WxApi
 
         private static XNamespace ns = "http://schemas.android.com/apk/res/android";
 
-        [PostProcessBuild]
+        [PostProcessBuild(10001)]
         public static void OnPostprocessBuild(BuildTarget target, string projectPath)
         {
+            CopyNativeCode(projectPath);
             string packageName = PlayerSettings.applicationIdentifier;
-
             RefreshLaunchManifest(projectPath, packageName);
+            RefreshManifest(projectPath);
             ThirdSDKSettings settings = ThirdSDKSettings.Instance;
             // Objective-C 文件路径
-            var objectiveCFilePath = $"{projectPath}/unityLibrary/src/main/java/com/bridge/wxapi/WXAPIManager.java";
+            var objectiveCFilePath = Path.Combine(projectPath, Common.ManifestProcessor.NATIVE_CODE_DIR, "wxapi/WXAPIManager.java");
             // 读取 Objective-C 文件内容
             var objectiveCCode = new StringBuilder(File.ReadAllText(objectiveCFilePath));
             objectiveCCode = objectiveCCode.Replace("**APPID**", settings.WxAppId);
@@ -41,6 +42,8 @@ namespace Bridge.WxApi
             File.WriteAllText(objectiveCFilePath, objectiveCCode.ToString());
             RefreshActivityPackagePath(projectPath, packageName, "WXEntryActivity.java");
             RefreshActivityPackagePath(projectPath, packageName, "WXPayEntryActivity.java");
+            
+            Common.ManifestProcessor.ReplaceBuildDefinedCache.Add("##WX_DEPENDENCIES##", "api 'com.tencent.mm.opensdk:wechat-sdk-android:6.8.24'");
         }
 
         private static void RefreshLaunchManifest(string projectPath, string packageName)
@@ -56,29 +59,62 @@ namespace Bridge.WxApi
             catch (IOException e)
 #pragma warning restore 0168
             {
-                LogBuildLaunchFailed();
+                LogBuildLaunchFailed(packageName);
                 return;
             }
 
             XElement elemManifest = manifest.Element("manifest");
             if (elemManifest == null)
             {
-                LogBuildLaunchFailed();
+                LogBuildLaunchFailed(packageName);
                 return;
             }
 
             XElement elemApplication = elemManifest.Element("application");
             if (elemApplication == null)
             {
-                LogBuildLaunchFailed();
+                LogBuildLaunchFailed(packageName);
                 return;
             }
 
-            elemApplication.Add(CreateActivityElement(".wxapi.WXPayEntryActivity", "@android:style/Theme.Translucent.NoTitleBar", true, packageName, "singleTask"));
+            elemApplication.Add(CreateActivityElement(".wxapi.WXPayEntryActivity", packageName));
 
-            elemApplication.Add(CreateActivityElement(".wxapi.WXEntryActivity", "@android:style/Theme.Translucent.NoTitleBar", true, packageName, "singleTask"));
+            elemApplication.Add(CreateActivityElement(".wxapi.WXEntryActivity", packageName));
 
             elemManifest.Save(manifestPath);
+        }
+
+        private static void RefreshManifest(string projectPath)
+        {
+            string manifestPath = Path.Combine(projectPath, Common.ManifestProcessor.MANIFEST_RELATIVE_PATH);
+            XDocument manifest;
+            try
+            {
+                manifest = XDocument.Load(manifestPath);
+            }
+#pragma warning disable 0168
+            catch (IOException e)
+#pragma warning restore 0168
+            {
+                LogBuildFailed();
+                return;
+            }
+
+            XElement elemManifest = manifest.Element("manifest");
+            if (elemManifest == null)
+            {
+                LogBuildFailed();
+                return;
+            }
+            
+            XElement queries = elemManifest.Element("queries");
+            if (queries == null)
+            {
+                queries = new XElement("queries");
+                elemManifest.Add(queries);
+            }
+            
+            queries.Add(new XElement("package", new XAttribute(Common.ManifestProcessor.ns + "name", "com.tencent.mm")));
         }
 
         private static void RefreshActivityPackagePath(string projectPath, string packageName, string fileName)
@@ -104,27 +140,43 @@ namespace Bridge.WxApi
             objectiveCFilePath = Path.Combine(objectiveCFilePath, fileName);
             File.WriteAllText(objectiveCFilePath, objectiveCCode.ToString());
         }
+        
+        private static void CopyNativeCode(string projectPath)
+        {
+            var sourcePath = ThirdSDKPackageManager.GetUnityPackagePath(ThirdSDKPackageManager.WxApiPackageName);
+            if (string.IsNullOrEmpty(sourcePath))
+            {
+                // 这个不是通过ump下载的包，查找工程内部文件夹
+                sourcePath = "Assets/ThirdSDK/WxApi";
+            }
 
-        private static XElement CreateActivityElement(string name, string theme, bool exported, string taskAffinity, string launchMode)
+            sourcePath += "/Plugins/Android";
+            Debug.Log("remotePackagePath===" + sourcePath);
+            string targetPath = Path.Combine(projectPath, Common.ManifestProcessor.NATIVE_CODE_DIR, "wxapi");
+            Debug.Log("targetPath===" + targetPath);
+            FileTool.DirectoryCopy(sourcePath + "/wxapi", targetPath);
+        }
+
+        private static XElement CreateActivityElement(string name, string taskAffinity)
         {
             return new XElement("activity",
                     new XAttribute(ns + "name", name),
                     new XAttribute(ns + "label", "@string/app_name"),
-                    new XAttribute(ns + "theme", theme),
-                    new XAttribute(ns + "exported", exported ? "true" : "false"),
+                    new XAttribute(ns + "theme", "@android:style/Theme.Translucent.NoTitleBar"),
+                    new XAttribute(ns + "exported", "true"),
                     new XAttribute(ns + "taskAffinity", taskAffinity),
-                    new XAttribute(ns + "launchMode", launchMode));
+                    new XAttribute(ns + "launchMode", "singleTask"));
         }
 
-        private static void LogBuildLaunchFailed()
+        private static void LogBuildLaunchFailed(string packageName)
         {
-            Debug.LogWarning(@"LauncherManifest.xml is not valid.
+            Debug.LogWarning($@"LauncherManifest.xml is not valid.
     <!-- 微信API回调Activity-->
     <activity
             android:name="".wxapi.WXPayEntryActivity""
             android:theme=""@android:style/Theme.Translucent.NoTitleBar""
             android:exported=""true""
-            android:taskAffinity=""com.zhandoushaonv.android""
+            android:taskAffinity=""{packageName}""
             android:launchMode=""singleTask"">
     </activity>
 
@@ -132,9 +184,14 @@ namespace Bridge.WxApi
             android:name="".wxapi.WXEntryActivity""
             android:theme=""@android:style/Theme.Translucent.NoTitleBar""
             android:exported=""true""
-            android:taskAffinity=""com.zhandoushaonv.android""
+            android:taskAffinity=""{packageName}""
             android:launchMode=""singleTask"">
     </activity>");
+        }
+        
+        private static void LogBuildFailed()
+        {
+            Debug.LogWarning("设置微信配置失败，请手动配置微信配置");
         }
     }
 }
