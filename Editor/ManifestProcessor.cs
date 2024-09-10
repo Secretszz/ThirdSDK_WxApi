@@ -43,7 +43,7 @@ namespace Bridge.WxApi
             RefreshActivityPackagePath(projectPath, packageName, "WXEntryActivity.java");
             RefreshActivityPackagePath(projectPath, packageName, "WXPayEntryActivity.java");
             
-            Common.ManifestProcessor.ReplaceBuildDefinedCache.Add("##WX_DEPENDENCIES##", "api 'com.tencent.mm.opensdk:wechat-sdk-android:6.8.24'");
+            Common.ManifestProcessor.ReplaceBuildDefinedCache[Common.ManifestProcessor.WX_DEPENDENCIES] = "api 'com.tencent.mm.opensdk:wechat-sdk-android:6.8.24'";
         }
 
         private static void RefreshLaunchManifest(string projectPath, string packageName)
