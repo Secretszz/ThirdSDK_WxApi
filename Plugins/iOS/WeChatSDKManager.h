@@ -7,29 +7,23 @@
 
 #import "WXApiManager.h"
 #import "WXApi.h"
-
-typedef void(*WXAPIU3DBridgeCallback_onPayCallback)(int code, const char* message);
-typedef void(*WXAPIU3DBridgeCallback_onShareCallback)(bool success, const char* message);
-typedef void(*WXAPIU3DBridgeCallback_onAuthCallback)(int errCode, const char* errStr, const char* code, const char* state);
+#import "CommonApi.h"
 
 @interface WeChatSDKManager : NSObject<WXApiManagerDelegate>{
     bool isInit;
 }
 
-@property (nonatomic, assign) WXAPIU3DBridgeCallback_onPayCallback onPayCallback;
-@property (nonatomic, assign) WXAPIU3DBridgeCallback_onShareCallback onShareCallback;
-@property (nonatomic, assign) WXAPIU3DBridgeCallback_onAuthCallback onAuthCallback;
+@property (nonatomic, assign) U3DBridgeCallback_Success onSuccess;
+@property (nonatomic, assign) U3DBridgeCallback_Cancel onCancel;
+@property (nonatomic, assign) U3DBridgeCallback_Error onError;
 
 // 初始化
--(void) initWeChat:(NSString *) appId
-     universalLink:(NSString *) universalLink;
+-(void) initWeChat;
 
 -(BOOL) isInstalledWeChat;
 
 // 获取设备国家代码
 -(NSString *) CountrylocaleIdenti;
-
--(void) shareCompletion:(BOOL) success;
 
 -(void) shareImageToWX :(UIImage *) image;
 

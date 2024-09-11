@@ -10,6 +10,7 @@
 #import "WXApi.h"
 #import "WXUtil.h"
 #import "JsonUtil.h"
+#import "CommonApi.h"
 
 @implementation WeChatSDKManager
 
@@ -31,8 +32,8 @@
         return;
     }
     isInit = true;
-    NSString * appId = @"**APPID**";
-    NSString * universalLink = @"**UNILINK**";
+    NSString * appId = @"";
+    NSString * universalLink = @"https://sunnygame666.com/slashandgirl/";
     [WXApi startLogByLevel:WXLogLevelDetail logBlock:^(NSString * _Nonnull log) {
         NSLog(@"===WechatSDK:%@", log);
     }];
@@ -94,13 +95,6 @@
     return WXSceneSession;
 }
 
--(void) shareCompletion:(BOOL) success{
-    if (self.onShareCallback != nil) {
-        self.onShareCallback(success, success ? "success" : "failed");
-        self.onShareCallback = nil;
-    }
-}
-
 -(void) shareImageToWX :(UIImage *) image{
     NSMutableArray* sharingItems = [NSMutableArray new];
     
@@ -132,13 +126,13 @@
         NSLog(@"分享渠道%@", activitytype);
         if (completed) {
             NSLog(@"分享成功");
-            if (self.onShareCallback != nil) {
-                self.onShareCallback(true, [activitytype UTF8String]);
+            if (self.onSuccess != nil) {
+                self.onSuccess([activitytype UTF8String]);
             }
         }else{
             NSLog(@"分享失败");
-            if (self.onShareCallback != nil) {
-                self.onShareCallback(false, [activitytype UTF8String]);
+            if (self.onError != nil) {
+                self.onError(-1, [activitytype UTF8String]);
             }
         }
     };
@@ -156,8 +150,14 @@
 }
 
 - (void)managerDidRecvMessageResponse:(SendMessageToWXResp *)response{
-    [self shareCompletion:response.errCode == 0];
     NSLog(@"code===%d, msg===%@, type===%d", response.errCode, response.errStr, response.type);
+    if (response.errCode == WXSuccess) {
+        self.onSuccess([response.errStr UTF8String]);
+    } else if (response.errCode == WXErrCodeUserCancel){
+        self.onCancel();
+    } else{
+        self.onError(response.errCode, [response.errStr UTF8String]);
+    }
 }
 
 - (void)managerDidRecvAuthResponse:(SendAuthResp *)response{
@@ -198,9 +198,12 @@
 
 - (void)managerDidRecvPayResponse:(PayResp *)response{
     NSLog(@"code===%d, msg===%@, type===%d", response.errCode, response.errStr, response.type);
-    if (self.onPayCallback != nil) {
-        self.onPayCallback(response.errCode, [response.errStr UTF8String]);
-        self.onPayCallback = nil;
+    if (response.errCode == WXSuccess) {
+        self.onSuccess([response.errStr UTF8String]);
+    } else if (response.errCode == WXErrCodeUserCancel){
+        self.onCancel();
+    } else{
+        self.onError(response.errCode, [response.errStr UTF8String]);
     }
 }
 
@@ -237,25 +240,29 @@ extern "C" {
         return [[WeChatSDKManager sharedManager] isInstalledWeChat];
     }
     
-    void wx_Purchase(const char * orderInfo, WXAPIU3DBridgeCallback_onPayCallback callback){
+    void wx_Purchase(const char * orderInfo, U3DBridgeCallback_Success onSuccess, U3DBridgeCallback_Cancel onCancel, U3DBridgeCallback_Error onError){
         NSString* jParams = [NSString stringWithUTF8String:orderInfo];
         NSData* jsonData = [jParams dataUsingEncoding:NSUTF8StringEncoding];
         NSError* error;
         NSDictionary* dict = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&error];
         if (error){
             NSLog(@"解析json错误：%@, %@", jParams, error);
-            callback(-1, "解析订单错误");
+            onError(-1, "解析订单错误");
             return;
         }
-        [WeChatSDKManager sharedManager].onPayCallback = callback;
+        [WeChatSDKManager sharedManager].onSuccess = onSuccess;
+        [WeChatSDKManager sharedManager].onCancel = onCancel;
+        [WeChatSDKManager sharedManager].onError = onError;
         [WXApiRequestHandler sendPayRequest:dict completion:nil];
     }
 
     /**
      Share image with device local url
      */
-    void wx_shareImage(const char * imagePath, int scene, WXAPIU3DBridgeCallback_onShareCallback callback){
-        [WeChatSDKManager sharedManager].onShareCallback = callback;
+    void wx_shareImage(const char * imagePath, int scene, U3DBridgeCallback_Success onSuccess, U3DBridgeCallback_Cancel onCancel, U3DBridgeCallback_Error onError){
+        [WeChatSDKManager sharedManager].onSuccess = onSuccess;
+        [WeChatSDKManager sharedManager].onCancel = onCancel;
+        [WeChatSDKManager sharedManager].onError = onError;
         
         NSString *strImagePath = [NSString stringWithUTF8String:imagePath];
         // NSLog(@"imagePath===%@", strImagePath);
@@ -271,15 +278,21 @@ extern "C" {
         UIImage * thumbImage = [WXUtil compressImageDataSize:image targetDataLength:65534];
         WXScene wxScene = [WeChatSDKManager getWXScene:scene];
         [WXApiRequestHandler sendImageData:imageData TagName:tagName MessageExt:messgaeExt Action:action ThumbImage:thumbImage InScene:wxScene completion:^(BOOL success) {
-            [WeChatSDKManager.sharedManager shareCompletion:success];
+            if (success) {
+                WeChatSDKManager.sharedManager.onSuccess("");
+            } else{
+                WeChatSDKManager.sharedManager.onError(-1, "");
+            }
         }];
     }
     
 	/**
 	 share image whit image byte[] data
 	 */
-    void wx_shareImageWithDatas(const Byte* datas, int length, int scene, WXAPIU3DBridgeCallback_onShareCallback callback){
-        [WeChatSDKManager sharedManager].onShareCallback = callback;
+    void wx_shareImageWithDatas(const Byte* datas, int length, int scene, U3DBridgeCallback_Success onSuccess, U3DBridgeCallback_Cancel onCancel, U3DBridgeCallback_Error onError){
+        [WeChatSDKManager sharedManager].onSuccess = onSuccess;
+        [WeChatSDKManager sharedManager].onCancel = onCancel;
+        [WeChatSDKManager sharedManager].onError = onError;
         
         NSData * imageData = [NSData dataWithBytes:datas length:length];
         // NSLog(@"share image datas data size === %lu byte", imageData.length);
@@ -293,12 +306,18 @@ extern "C" {
         UIImage * thumbImage = [WXUtil compressImageDataSize:image targetDataLength:65534];
         WXScene wxScene = [WeChatSDKManager getWXScene:scene];
         [WXApiRequestHandler sendImageData:imageData TagName:tagName MessageExt:messgaeExt Action:action ThumbImage:thumbImage InScene:wxScene completion:^(BOOL success) {
-            [WeChatSDKManager.sharedManager shareCompletion:success];
+            if (success) {
+                WeChatSDKManager.sharedManager.onSuccess("");
+            } else{
+                WeChatSDKManager.sharedManager.onError(-1, "");
+            }
         }];
     }
     
-    void wx_Auth(const char * state, WXAPIU3DBridgeCallback_onAuthCallback callback){
-        [WeChatSDKManager sharedManager].onAuthCallback = callback;
+    void wx_Auth(U3DBridgeCallback_Success onSuccess, U3DBridgeCallback_Cancel onCancel, U3DBridgeCallback_Error onError){
+        [WeChatSDKManager sharedManager].onSuccess = onSuccess;
+        [WeChatSDKManager sharedManager].onCancel = onCancel;
+        [WeChatSDKManager sharedManager].onError = onError;
         
     }
 #if __cplusplus
