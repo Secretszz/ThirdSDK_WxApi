@@ -41,7 +41,7 @@ namespace Bridge.WxApi
 		/// </summary>
 		/// <param name="orderInfo">订单信息</param>
 		/// <param name="listener">支付回调</param>
-		void OpenPay(string orderInfo, IPayListener listener);
+		void OpenPay(string orderInfo, IBridgeListener listener);
 
 		/// <summary>
 		/// 分享图片到微信
@@ -49,7 +49,7 @@ namespace Bridge.WxApi
 		/// <param name="imagePath">图片路径</param>
 		/// <param name="scene">分享场景</param>
 		/// <param name="listener">分享回调</param>
-		void ShareImage(string imagePath, int scene, IShareListener listener);
+		void ShareImage(string imagePath, int scene, IBridgeListener listener);
 
 		/// <summary>
 		/// 分享图片到微信
@@ -57,7 +57,7 @@ namespace Bridge.WxApi
 		/// <param name="imageData">图片数据</param>
 		/// <param name="scene">分享场景</param>
 		/// <param name="listener">分享回调</param>
-		void ShareImage(byte[] imageData, int scene, IShareListener listener);
+		void ShareImage(byte[] imageData, int scene, IBridgeListener listener);
 
 		/// <summary>
 		/// 分享链接
@@ -65,7 +65,7 @@ namespace Bridge.WxApi
 		/// <param name="linkUrl">链接地址</param>
 		/// <param name="scene">分享场景</param>
 		/// <param name="listener">拉起分享窗口事件</param>
-		void ShareLink(string linkUrl, int scene, IShareListener listener);
+		void ShareLink(string linkUrl, int scene, IBridgeListener listener);
 
 		/// <summary>
 		/// 分享视频
@@ -73,12 +73,12 @@ namespace Bridge.WxApi
 		/// <param name="videoUrl">视频地址</param>
 		/// <param name="scene">分享场景</param>
 		/// <param name="listener">拉起分享窗口事件</param>
-		void ShareVideo(string videoUrl, int scene, IShareListener listener);
+		void ShareVideo(string videoUrl, int scene, IBridgeListener listener);
 
 		/// <summary>
 		/// 登录
 		/// </summary>
 		/// <param name="listener">验证回调</param>
-		void WeChatAuth(ILoginListener listener);
+		void WeChatAuth(IBridgeListener listener);
 	}
 }
