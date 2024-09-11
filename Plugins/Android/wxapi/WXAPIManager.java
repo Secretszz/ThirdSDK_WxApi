@@ -10,9 +10,8 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import com.bridge.common.listener.ILoginListener;
-import com.bridge.common.listener.IPayListener;
-import com.bridge.common.listener.IShareListener;
+import com.bridge.common.listener.IBridgeListener;
+import com.bridge.common.util.BridgeUtil;
 import com.tencent.mm.opensdk.constants.Build;
 import com.tencent.mm.opensdk.constants.ConstantsAPI;
 import com.tencent.mm.opensdk.modelbase.BaseReq;
@@ -27,6 +26,7 @@ import com.tencent.mm.opensdk.openapi.WXAPIFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.Random;
 
 public class WXAPIManager {
@@ -37,9 +37,9 @@ public class WXAPIManager {
     private static WXAPIManager instance;
 
     private IWXAPI wxApi;
-    private IShareListener shareListener;
-    private ILoginListener loginListener;
-    private IPayListener payListener;
+    private IBridgeListener shareListener;
+    private IBridgeListener loginListener;
+    private IBridgeListener payListener;
     private SendToWeChat sender;
 
     public static WXAPIManager getInstance(){
@@ -105,7 +105,7 @@ public class WXAPIManager {
      * @param orderInfo 订单信息
      * @param payListener 支付回调
      */
-    public void openWechatPay(String orderInfo, IPayListener payListener){
+    public void openWechatPay(String orderInfo, IBridgeListener payListener){
         if (checkWXApi()){
             payListener.onError(-1, "wxApi error");
             return;
@@ -130,11 +130,36 @@ public class WXAPIManager {
 
     /**
      * 分享图片到微信
+     * @param imagePath 图片路径
+     * @param targetScene 分享场景
+     * @param shareListener 分享回调
+     */
+    public void shareImage(String imagePath, int targetScene, IBridgeListener shareListener){
+        try {
+            shareImage(BridgeUtil.getBitmap(imagePath), targetScene, shareListener);
+        } catch (IOException e) {
+            Log.e(TAG, "shareImage: ", e);
+            shareListener.onError(-1, e.getMessage());
+        }
+    }
+
+    /**
+     * 分享图片到微信
+     * @param imageData 图片数据
+     * @param targetScene 分享场景
+     * @param shareListener 分享回调
+     */
+    public void shareImage(byte[] imageData, int targetScene, IBridgeListener shareListener){
+        shareImage(BridgeUtil.byteArrayToBitmap(imageData), targetScene, shareListener);
+    }
+
+    /**
+     * 分享图片到微信
      * @param bmp 图片
      * @param targetScene 目标场景
      * @param shareListener 完成分享事件
      */
-    public void shareImage(Bitmap bmp, int targetScene, IShareListener shareListener){
+    private void shareImage(Bitmap bmp, int targetScene, IBridgeListener shareListener){
         if (checkWXApi()){
             shareListener.onError(-1, "wxApi error");
             return;
@@ -155,7 +180,7 @@ public class WXAPIManager {
      * 发送微信授权
      * @param loginListener 授权完成回调事件
      */
-    public void login(ILoginListener loginListener){
+    public void login(IBridgeListener loginListener){
         if (checkWXApi()){
             loginListener.onError(-1, "wxApi error");
             return;
@@ -223,7 +248,7 @@ public class WXAPIManager {
             if (shareListener != null){
                 if (sendResp.errCode == BaseResp.ErrCode.ERR_OK){
                     // 分享成功
-                    this.shareListener.onSuccess();
+                    this.shareListener.onSuccess(sendResp.errStr);
                 } else if (sendResp.errCode == BaseResp.ErrCode.ERR_USER_CANCEL){
                     // 用户取消
                     this.shareListener.onCancel();
@@ -244,7 +269,7 @@ public class WXAPIManager {
             if (payListener != null){
                 if (resp.errCode == BaseResp.ErrCode.ERR_OK){
                     // 分享成功
-                    this.payListener.onSuccess();
+                    this.payListener.onSuccess(resp.errStr);
                 } else if (resp.errCode == BaseResp.ErrCode.ERR_USER_CANCEL){
                     // 用户取消
                     this.payListener.onCancel();

@@ -35,32 +35,32 @@ namespace Bridge.WxApi
 			return false;
 		}
 
-		void IBridge.OpenPay(string orderInfo, IPayListener listener)
+		void IBridge.OpenPay(string orderInfo, IBridgeListener listener)
 		{
-			listener?.OnPayResult(0, "");
+			listener?.OnSuccess("");
 		}
 
-		void IBridge.ShareImage(string imagePath, int scene, IShareListener listener)
+		void IBridge.ShareImage(string imagePath, int scene, IBridgeListener listener)
 		{
-			listener?.OnSuccess();
+			listener?.OnSuccess("");
 		}
 
-		void IBridge.ShareImage(byte[] imageData, int scene, IShareListener listener)
+		void IBridge.ShareImage(byte[] imageData, int scene, IBridgeListener listener)
 		{
-			listener?.OnSuccess();
+			listener?.OnSuccess("");
 		}
 
-		public void ShareLink(string linkUrl, int scene, IShareListener listener)
+		public void ShareLink(string linkUrl, int scene, IBridgeListener listener)
 		{
-			listener?.OnSuccess();
+			listener?.OnSuccess("");
 		}
 
-		public void ShareVideo(string videoUrl, int scene, IShareListener listener)
+		public void ShareVideo(string videoUrl, int scene, IBridgeListener listener)
 		{
-			listener?.OnSuccess();
+			listener?.OnSuccess("");
 		}
 
-		public void WeChatAuth(ILoginListener listener)
+		public void WeChatAuth(IBridgeListener listener)
 		{
 			listener?.OnCancel();
 		}

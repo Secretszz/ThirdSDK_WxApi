@@ -74,7 +74,7 @@ namespace Bridge.WxApi
 		/// </summary>
 		/// <param name="orderInfo">订单信息</param>
 		/// <param name="listener">支付回调</param>
-		public static void OpenPay(string orderInfo, IPayListener listener)
+		public static void OpenPay(string orderInfo, IBridgeListener listener)
 		{
 			bridgeImpl.OpenPay(orderInfo, listener);
 		}
@@ -85,7 +85,7 @@ namespace Bridge.WxApi
 		/// <param name="imagePath">图片路径</param>
 		/// <param name="scene">分享场景</param>
 		/// <param name="listener">分享回调</param>
-		public static void ShareImage(string imagePath, int scene, IShareListener listener)
+		public static void ShareImage(string imagePath, int scene, IBridgeListener listener)
 		{
 			bridgeImpl.ShareImage(imagePath, scene, listener);
 		}
@@ -96,7 +96,7 @@ namespace Bridge.WxApi
 		/// <param name="imageData">图片数据</param>
 		/// <param name="scene">分享场景</param>
 		/// <param name="listener">分享回调</param>
-		public static void ShareImage(byte[] imageData, int scene, IShareListener listener)
+		public static void ShareImage(byte[] imageData, int scene, IBridgeListener listener)
 		{
 			bridgeImpl.ShareImage(imageData, scene, listener);
 		}
@@ -107,7 +107,7 @@ namespace Bridge.WxApi
 		/// <param name="linkUrl">链接地址</param>
 		/// <param name="scene">分享场景</param>
 		/// <param name="listener">拉起分享窗口事件</param>
-		public static void ShareLink(string linkUrl, int scene, IShareListener listener)
+		public static void ShareLink(string linkUrl, int scene, IBridgeListener listener)
 		{
 			bridgeImpl.ShareLink(linkUrl, scene, listener);
 		}
@@ -118,7 +118,7 @@ namespace Bridge.WxApi
 		/// <param name="videoUrl">视频地址</param>
 		/// <param name="scene">分享场景</param>
 		/// <param name="listener">拉起分享窗口事件</param>
-		public static void ShareVideo(string videoUrl, int scene, IShareListener listener)
+		public static void ShareVideo(string videoUrl, int scene, IBridgeListener listener)
 		{
 			bridgeImpl.ShareVideo(videoUrl, scene, listener);
 		}
