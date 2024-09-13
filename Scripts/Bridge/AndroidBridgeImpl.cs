@@ -12,7 +12,6 @@
 namespace Bridge.WxApi
 {
 	using Common;
-	using Newtonsoft.Json;
 	using UnityEngine;
 
 	/// <summary>
@@ -66,7 +65,7 @@ namespace Bridge.WxApi
 		{
 			currentActivity.Call("runOnUiThread", new AndroidJavaRunnable(() =>
 			{
-				api?.Call("openWechatPay", JsonConvert.SerializeObject(orderInfo), new BridgeCallback(listener));
+				api?.Call("openWechatPay", orderInfo, new BridgeCallback(listener));
 			}));
 		}
 
