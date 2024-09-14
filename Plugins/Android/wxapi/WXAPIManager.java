@@ -53,17 +53,22 @@ public class WXAPIManager {
      * 初始化微信API
      */
     public void initWXAPIManager(Activity activity){
-        APP_ID = "";
+        APP_ID = "**APPID**";
         wxApi = WXAPIFactory.createWXAPI(activity, APP_ID, true);
         wxApi.registerApp(APP_ID);
-        activity.registerReceiver(new BroadcastReceiver() {
+        BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
 
                 // 将该app注册到微信
                 wxApi.registerApp(APP_ID);
             }
-        }, new IntentFilter(ConstantsAPI.ACTION_REFRESH_WXAPP));
+        };
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU){
+            activity.registerReceiver(broadcastReceiver, new IntentFilter(ConstantsAPI.ACTION_REFRESH_WXAPP), Context.RECEIVER_EXPORTED);
+        } else {
+            activity.registerReceiver(broadcastReceiver, new IntentFilter(ConstantsAPI.ACTION_REFRESH_WXAPP));
+        }
         sender = new SendToWeChat(wxApi);
     }
 
