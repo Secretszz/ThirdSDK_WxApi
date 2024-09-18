@@ -21,17 +21,13 @@ namespace Bridge.WxApi
 
     public static class ManifestProcessor
     {
-        private const string MANIFEST_RELATIVE_PATH = "Plugins/Android/LauncherManifest.xml";
-
-        private static XNamespace ns = "http://schemas.android.com/apk/res/android";
-
         [PostProcessBuild(10001)]
         public static void OnPostprocessBuild(BuildTarget target, string projectPath)
         {
             CopyNativeCode(projectPath);
             string packageName = PlayerSettings.applicationIdentifier;
             RefreshLaunchManifest(projectPath, packageName);
-            RefreshManifest(projectPath);
+            RefreshManifest();
             ThirdSDKSettings settings = ThirdSDKSettings.Instance;
             // Objective-C 文件路径
             var objectiveCFilePath = Path.Combine(projectPath, Common.ManifestProcessor.NATIVE_CODE_DIR, "wxapi/WXAPIManager.java");
@@ -84,37 +80,9 @@ namespace Bridge.WxApi
             elemManifest.Save(manifestPath);
         }
 
-        private static void RefreshManifest(string projectPath)
+        private static void RefreshManifest()
         {
-            string manifestPath = Path.Combine(projectPath, Common.ManifestProcessor.MANIFEST_RELATIVE_PATH);
-            XDocument manifest;
-            try
-            {
-                manifest = XDocument.Load(manifestPath);
-            }
-#pragma warning disable 0168
-            catch (IOException e)
-#pragma warning restore 0168
-            {
-                LogBuildFailed();
-                return;
-            }
-
-            XElement elemManifest = manifest.Element("manifest");
-            if (elemManifest == null)
-            {
-                LogBuildFailed();
-                return;
-            }
-            
-            XElement queries = elemManifest.Element("queries");
-            if (queries == null)
-            {
-                queries = new XElement("queries");
-                elemManifest.Add(queries);
-            }
-            
-            queries.Add(new XElement("package", new XAttribute(Common.ManifestProcessor.ns + "name", "com.tencent.mm")));
+            Common.ManifestProcessor.QueriesElements.Add(new XElement("package", new XAttribute(Common.ManifestProcessor.ns + "name", "com.tencent.mm")));
         }
 
         private static void RefreshActivityPackagePath(string projectPath, string packageName, string fileName)
@@ -160,12 +128,12 @@ namespace Bridge.WxApi
         private static XElement CreateActivityElement(string name, string taskAffinity)
         {
             return new XElement("activity",
-                    new XAttribute(ns + "name", name),
-                    new XAttribute(ns + "label", "@string/app_name"),
-                    new XAttribute(ns + "theme", "@android:style/Theme.Translucent.NoTitleBar"),
-                    new XAttribute(ns + "exported", "true"),
-                    new XAttribute(ns + "taskAffinity", taskAffinity),
-                    new XAttribute(ns + "launchMode", "singleTask"));
+                    new XAttribute(Common.ManifestProcessor.ns + "name", name),
+                    new XAttribute(Common.ManifestProcessor.ns + "label", "@string/app_name"),
+                    new XAttribute(Common.ManifestProcessor.ns + "theme", "@android:style/Theme.Translucent.NoTitleBar"),
+                    new XAttribute(Common.ManifestProcessor.ns + "exported", "true"),
+                    new XAttribute(Common.ManifestProcessor.ns + "taskAffinity", taskAffinity),
+                    new XAttribute(Common.ManifestProcessor.ns + "launchMode", "singleTask"));
         }
 
         private static void LogBuildLaunchFailed(string packageName)
@@ -187,11 +155,6 @@ namespace Bridge.WxApi
             android:taskAffinity=""{packageName}""
             android:launchMode=""singleTask"">
     </activity>");
-        }
-        
-        private static void LogBuildFailed()
-        {
-            Debug.LogWarning("设置微信配置失败，请手动配置微信配置");
         }
     }
 }

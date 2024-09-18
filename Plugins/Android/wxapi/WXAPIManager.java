@@ -34,7 +34,6 @@ public class WXAPIManager {
     private static final int THUMB_SIZE = 150;
     public static String APP_ID;
     public final static int IMAGE_MAX_BYTES = 65535;
-    private static WXAPIManager instance;
 
     private IWXAPI wxApi;
     private IBridgeListener shareListener;
@@ -43,17 +42,14 @@ public class WXAPIManager {
     private SendToWeChat sender;
 
     public static WXAPIManager getInstance(){
-        if (instance == null){
-            instance = new WXAPIManager();
-        }
-        return instance;
+        return Holder.INSTANCE;
     }
 
     /**
      * 初始化微信API
      */
     public void initWXAPIManager(Activity activity){
-        APP_ID = "**APPID**";
+        APP_ID = "wxb2285c9967573112";
         wxApi = WXAPIFactory.createWXAPI(activity, APP_ID, true);
         wxApi.registerApp(APP_ID);
         BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
@@ -327,5 +323,9 @@ public class WXAPIManager {
             Log.d(TAG, "onResp: COMMAND_SENDAUTH");
             onAuthResp((SendAuth.Resp)resp);
         }
+    }
+
+    private static class Holder{
+        public final static WXAPIManager INSTANCE = new WXAPIManager();
     }
 }
