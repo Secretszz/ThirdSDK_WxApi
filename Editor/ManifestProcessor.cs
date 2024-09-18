@@ -19,7 +19,7 @@ namespace Bridge.WxApi
     using UnityEditor.Callbacks;
     using Editor;
 
-    public static class ManifestProcessor
+    internal static class ManifestProcessor
     {
         [PostProcessBuild(10001)]
         public static void OnPostprocessBuild(BuildTarget target, string projectPath)
