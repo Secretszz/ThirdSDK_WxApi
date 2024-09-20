@@ -17,7 +17,7 @@ namespace Bridge.WxApi
     using UnityEngine;
     using UnityEditor;
     using UnityEditor.Callbacks;
-    using Editor;
+    using Common;
 
     internal static class ManifestProcessor
     {
