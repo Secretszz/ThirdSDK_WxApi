@@ -71,7 +71,7 @@ namespace Bridge.WxApi
 				}
 				else
 				{
-					ApiPath = "Libraries/WxApi/Plugins/iOS/WeChatSDKManager.mm";
+					ApiPath = "Libraries/com.bridge.wxapi/Plugins/iOS/WeChatSDKManager.mm";
 				}
 				var objectiveCFilePath = Path.Combine(pathToBuildProject, ApiPath);
 				StringBuilder objectiveCCode = new StringBuilder(File.ReadAllText(objectiveCFilePath));
