@@ -32,8 +32,8 @@
         return;
     }
     isInit = true;
-    NSString * appId = @"";
-    NSString * universalLink = @"https://sunnygame666.com/slashandgirl/";
+    NSString * appId = @"**APPID**";
+    NSString * universalLink = @"**UNILINK**";
     [WXApi startLogByLevel:WXLogLevelDetail logBlock:^(NSString * _Nonnull log) {
         NSLog(@"===WechatSDK:%@", log);
     }];
