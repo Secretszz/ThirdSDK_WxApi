@@ -23,8 +23,6 @@ namespace Bridge.WxApi
 	/// </summary>
 	internal static class IOSProcessor
 	{
-		private const string ApiPath = "Libraries/ThirdSDK/WxApi/Plugins/iOS/WeChatSDKManager.mm";
-
 		[PostProcessBuild(10002)]
 		public static void OnPostProcessBuild(BuildTarget target, string pathToBuildProject)
 		{
@@ -65,6 +63,16 @@ namespace Bridge.WxApi
 				array.AddCFBundleURLTypes("Editor", "weixin", new[] { instance.WxAppId });
 				plist.WriteToFile(plistPath);
 
+				var sourcePath = ThirdSDKPackageManager.GetUnityPackagePath(ThirdSDKPackageManager.WxApiPackageName);
+				string ApiPath;
+				if (string.IsNullOrEmpty(sourcePath))
+				{
+					ApiPath = "Libraries/ThirdSDK/WxApi/Plugins/iOS/WeChatSDKManager.mm";
+				}
+				else
+				{
+					ApiPath = "Libraries/WxApi/Plugins/iOS/WeChatSDKManager.mm";
+				}
 				var objectiveCFilePath = Path.Combine(pathToBuildProject, ApiPath);
 				StringBuilder objectiveCCode = new StringBuilder(File.ReadAllText(objectiveCFilePath));
 				objectiveCCode.Replace("**APPID**", instance.WxAppId);
