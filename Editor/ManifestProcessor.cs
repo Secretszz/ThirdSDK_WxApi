@@ -111,7 +111,7 @@ namespace Bridge.WxApi
         
         private static void CopyNativeCode(string projectPath)
         {
-            var sourcePath = ThirdSDKPackageManager.GetUnityPackagePath(ThirdSDKPackageManager.WxApiPackageName);
+            var sourcePath = ThirdSDKPackageManager.GetUnityPackagePath(PackageType.WeChat);
             if (string.IsNullOrEmpty(sourcePath))
             {
                 // 这个不是通过ump下载的包，查找工程内部文件夹
