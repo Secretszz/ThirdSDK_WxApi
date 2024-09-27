@@ -253,7 +253,7 @@
 
 + (void)addCardsToCardPackage:(NSArray *)cardIds
                      cardExts:(NSArray *)cardExts
-                        appID:(NSArray *)appID
+                        appID:(NSString *)appID
                    completion:(void (^ __nullable)(BOOL success))completion
 {
     NSMutableArray *cardItems = [NSMutableArray array];

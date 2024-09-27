@@ -9,7 +9,6 @@
 #import "WXApiRequestHandler.h"
 #import "WXApi.h"
 #import "WXUtil.h"
-#import "JsonUtil.h"
 #import "CommonApi.h"
 
 @implementation WeChatSDKManager

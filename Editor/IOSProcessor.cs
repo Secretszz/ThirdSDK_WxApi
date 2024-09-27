@@ -16,7 +16,7 @@ namespace Bridge.WxApi
 	using UnityEditor;
 	using UnityEditor.Callbacks;
 	using UnityEditor.iOS.Xcode;
-	using Editor;
+	using Common;
 
 	/// <summary>
 	/// 
@@ -37,7 +37,6 @@ namespace Bridge.WxApi
 #else
 				var targetGUID = proj.TargetGuidByName("Unity-iPhone");
 #endif
-				proj.AddBuildProperty(targetGUID, "OTHER_LDFLAGS", "-ObjC -all_load");
 
 				proj.AddFrameworkToProjectEx(targetGUID, "Security.framework", false);
 				proj.AddFrameworkToProjectEx(targetGUID, "CoreGraphics.framework", false);
