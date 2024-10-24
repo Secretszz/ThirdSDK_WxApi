@@ -62,7 +62,7 @@ namespace Bridge.WxApi
 				array.AddCFBundleURLTypes("Editor", "weixin", new[] { instance.WxAppId });
 				plist.WriteToFile(plistPath);
 
-				var sourcePath = ThirdSDKPackageManager.GetUnityPackagePath(ThirdSDKPackageManager.WxApiPackageName);
+				var sourcePath = ThirdSDKPackageManager.GetUnityPackagePath(PackageType.WeChat);
 				string ApiPath;
 				if (string.IsNullOrEmpty(sourcePath))
 				{
