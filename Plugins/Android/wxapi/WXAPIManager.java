@@ -49,7 +49,7 @@ public class WXAPIManager {
      * 初始化微信API
      */
     public void initWXAPIManager(Activity activity){
-        APP_ID = "wxb2285c9967573112";
+        APP_ID = "**APPID**";
         wxApi = WXAPIFactory.createWXAPI(activity, APP_ID, true);
         wxApi.registerApp(APP_ID);
         BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
