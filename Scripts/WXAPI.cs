@@ -32,6 +32,8 @@ namespace Bridge.WxApi
 					_bridge = new iOSBridgeImpl();
 #elif UNITY_ANDROID && !UNITY_EDITOR
 					_bridge = new AndroidBridgeImpl();
+#elif UNITY_OPENHARMONY && !UNITY_EDITOR
+					_bridge = new OpenHarmonyImpl();
 #else
 					_bridge = new EditorBridge();
 #endif

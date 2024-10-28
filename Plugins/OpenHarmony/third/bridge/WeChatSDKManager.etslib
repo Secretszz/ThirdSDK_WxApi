@@ -1,0 +1,233 @@
+import * as wxopensdk from '@tencent/wechat_open_sdk';
+import { Want } from '@kit.AbilityKit';
+import fileUri from '@ohos.file.fileuri';
+import buffer from '@ohos.buffer';
+import { JSON } from '@kit.ArkTS';
+import { AppUtil } from '@pura/harmony-utils';
+import { BridgeCallback } from './CommonApi';
+import { BaseReq } from '@tencent/wechat_open_sdk';
+import { Log } from './Log';
+
+const kTag = "WeChatSDKManager"
+
+export function RegisterWeChatSDKManager() {
+  let register:Record<string, object> = {}
+  register["WeChatSDKManager"] = WeChatSDKManager;
+  return register;
+}
+
+export default class WeChatSDKManager implements wxopensdk.WXApiEventHandler{
+  private static instance : WeChatSDKManager;
+
+  public static getInstance(){
+    if (WeChatSDKManager.instance == null) {
+      WeChatSDKManager.instance = new WeChatSDKManager();
+    }
+    return WeChatSDKManager.instance;
+  }
+
+  private WXApi?:wxopensdk.WXApi
+  private shareCallback?:BridgeCallback;
+  private loginCallback?:BridgeCallback;
+  private payCallback?:BridgeCallback;
+
+  /**
+   * 在EntryAbility中响应来自微信的回调
+   * @param want
+   */
+  public handleWant(want: Want){
+    if (this.WXApi) {
+      this.WXApi.handleWant(want, this)
+    }
+  }
+
+  public init(){
+    this.WXApi = wxopensdk.WXAPIFactory.createWXAPI("");
+  }
+
+  /**
+   * 微信是否下载（由于鸿蒙安全性问题，无法查看其他应用是否安装，暂不支持）
+   * @returns
+   */
+  public isWXAppInstalled():boolean{
+    return false;
+  }
+
+  /**
+   * 打开微信客服（暂不支持）
+   * @param corpID
+   * @param kfid
+   * @returns
+   */
+  public openCustomerServiceChat(corpID:string, kfid:string):boolean{
+    return false;
+  }
+
+  /**
+   * 微信支付
+   * @param ability
+   * @param orderInfo 订单信息
+   * @param callback 支付回调
+   */
+  public pay(orderInfo:string, callback:BridgeCallback){
+    this.payCallback = callback;
+    let req = new wxopensdk.PayReq
+    let order = JSON.parse(orderInfo) as object;
+    req.appId = order["appid"]//微信开放平台审核通过的移动应用AppID
+    req.partnerId = order["partnerid"]//微信支付商户号
+    req.prepayId = order["prepayid"]//调用微信支付下单接口返回的支付交易会话ID
+    req.nonceStr = order["noncestr"]//随机字符串，不长于32位
+    req.timeStamp = order["timestamp"]//时间戳
+    req.packageValue = order["package"]//填写固定值Sign=WXPay
+    req.sign = order["sign"]//签名值
+
+    if (!this.sendReq(req)) {
+      callback.error(-2, "微信未安装")
+    }
+  }
+
+  /**
+   * 分享文字到微信
+   * @param ability
+   * @param text 文字内容
+   * @param callback 分享回调
+   */
+  public sendTextToWX(text:string, callback:BridgeCallback){
+    this.shareCallback = callback;
+    let textObject = new wxopensdk.WXTextObject
+    textObject.text = text
+
+    let mediaMessage = new wxopensdk.WXMediaMessage()
+    mediaMessage.mediaObject = textObject
+
+    let req = new wxopensdk.SendMessageToWXReq()
+    req.scene = wxopensdk.SendMessageToWXReq.WXSceneSession
+    req.message = mediaMessage
+
+    if (!this.sendReq(req)) {
+      callback.error(-2, "微信未安装")
+    }
+  }
+
+  /**
+   * 分享图片
+   * @param ability
+   * @param filePath 文件路径
+   * @param data 文件数据
+   * @param targetScene 目标分享类型
+   * @param callback 分享回调
+   */
+  public sendImageToWX(filePath:string, data:ArrayBuffer, targetScene:number, callback:BridgeCallback){
+    this.shareCallback = callback;
+    let imageObject = new wxopensdk.WXImageObject
+    imageObject.uri = fileUri.getUriFromPath(filePath);
+
+    let buf: buffer.Buffer = buffer.from(data);
+    imageObject.imageData = buf.toString('base64', 0, buf.length);
+
+    let mediaMessage = new wxopensdk.WXMediaMessage()
+    mediaMessage.mediaObject = imageObject
+
+    let req = new wxopensdk.SendMessageToWXReq()
+    req.scene = targetScene
+    req.message = mediaMessage
+
+    if (!this.sendReq(req)) {
+      callback.error(-2, "微信未安装")
+    }
+  }
+
+  /**
+   * 微信登录
+   * @param ability
+   * @param callback
+   */
+  public auth(callback:BridgeCallback){
+    let req = new wxopensdk.SendAuthReq
+    req.isOption1 = false
+    req.nonAutomatic = true
+    req.scope = 'snsapi_userinfo,snsapi_friend,snsapi_message,snsapi_contact'
+    req.state = 'none' // 透传参数
+    req.transaction = 'test123'
+
+    if (!this.sendReq(req)) {
+      callback.error(-2, "微信未安装")
+    }
+  }
+
+  private sendReq(req: BaseReq):boolean | Promise<boolean>{
+    if (this.WXApi) {
+      return this.WXApi.sendReq(AppUtil.getContext(), req)
+    }
+    return false;
+  }
+
+  /**
+   * 分享到微信回调
+   * @param resp
+   */
+  private onSendMessageToWXResp(resp: wxopensdk.SendMessageToWXResp){
+    if (!this.shareCallback) {
+      return;
+    }
+    let errStr = resp.errStr != undefined ? resp.errStr : ""
+    if (resp.errCode == wxopensdk.ErrCode.ERR_OK) {
+      this.shareCallback.success(errStr)
+    } else if (resp.errCode == wxopensdk.ErrCode.ERR_USER_CANCEL) {
+      this.shareCallback.cancel()
+    } else {
+      this.shareCallback.error(resp.errCode, errStr)
+    }
+  }
+
+  /**
+   * 微信登录回调
+   * @param resp
+   */
+  private onSendAuthResp(resp: wxopensdk.SendAuthResp){
+    if (!this.loginCallback) {
+      return;
+    }
+    let errStr = resp.errStr != undefined ? resp.errStr : ""
+    if (resp.errCode == wxopensdk.ErrCode.ERR_OK) {
+      this.loginCallback.success(JSON.stringify(resp))
+    } else if (resp.errCode == wxopensdk.ErrCode.ERR_USER_CANCEL) {
+      this.loginCallback.cancel()
+    } else {
+      this.loginCallback.error(resp.errCode, errStr)
+    }
+  }
+
+  /**
+   * 支付回调
+   * @param resp
+   */
+  private onPayResp(resp: wxopensdk.PayResp){
+    if (!this.payCallback) {
+      return;
+    }
+    let errStr = resp.errStr != undefined ? resp.errStr : ""
+    if (resp.errCode == wxopensdk.ErrCode.ERR_OK) {
+      this.payCallback.success(JSON.stringify(resp))
+    } else if (resp.errCode == wxopensdk.ErrCode.ERR_USER_CANCEL) {
+      this.payCallback.cancel()
+    } else {
+      this.payCallback.error(resp.errCode, errStr)
+    }
+  }
+
+  onReq(req: wxopensdk.BaseReq): void {
+
+  }
+
+  onResp(resp: wxopensdk.BaseResp): void {
+    Log.i(kTag, "onResp:%s", JSON.stringify(resp))
+    if (resp.type == wxopensdk.Command.kCommandSendMessageToWX){
+      this.onSendMessageToWXResp(resp as wxopensdk.SendMessageToWXResp)
+    } else if (resp.type == wxopensdk.Command.kCommandSendAuth) {
+      this.onSendAuthResp(resp as wxopensdk.SendAuthResp)
+    } else if (resp.type == wxopensdk.Command.kCommandPay) {
+      this.onPayResp(resp as wxopensdk.PayResp)
+    }
+  }
+}
