@@ -8,7 +8,8 @@
 @interface WXApiRequestHandler : NSObject
 
 + (void)sendText:(NSString *)text
-         InScene:(enum WXScene)scene;
+         InScene:(enum WXScene)scene
+      completion:(void (^ __nullable)(BOOL success))completion;
 
 + (void)sendImageData:(NSData *)imageData
               TagName:(NSString *)tagName
@@ -84,6 +85,7 @@
 
 + (void)addCardsToCardPackage:(NSArray *)cardIds
                      cardExts:(NSArray *)cardExts
+                        appID:(NSString *)appID
                    completion:(void (^ __nullable)(BOOL success))completion;
 
 + (void)sendAuthRequestScope:(NSString *)scope
